@@ -1,4 +1,4 @@
-const Product = require('../models/productSequelize');
+  const Product = require('../models/productSequelize');
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -13,7 +13,8 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId).then((product)=>{
+  req.user.getProducts({where : {id : prodId}}).then(products =>{
+    const product =products[0];
     if(!product){
       return res.redirect('/');
     }
@@ -24,6 +25,17 @@ exports.getEditProduct = (req, res, next) => {
       product:product
     });
   })
+  // Product.findByPk(prodId).then((product)=>{
+  //   if(!product){
+  //     return res.redirect('/');
+  //   }
+  //   res.render('admin/edit-product', {
+  //     pageTitle: 'Edit Product',
+  //     path: '/admin/edit-product',
+  //     editing:true,
+  //     product:product
+  //   });
+  // })
   
 };
 exports.postEditProduct = (req,res,next)=>{
@@ -55,27 +67,46 @@ exports.postAddProduct = (req, res, next) => {
   const description = req.body.description;
   // const product = new Product(null, title, imageUrl, description, price);
   // product.save().then((resolve)=>res.redirect('/')).catch(err=>{console.log(err)});
-  Product.create({
+  req.user.createProduct({
     title: title,
     price:price,
     imageURL: imageUrl,
     description:description
   }).then(resolve =>{
-    console.log("Created with sequilize");
+    console.log("Created with sequelize");
     console.log(resolve);
     res.redirect('/admin/add-product');
   })
-  .catch();
+  .catch(err => console.log(err));
+
+  // Product.create({
+  //   title: title,
+  //   price:price,
+  //   imageURL: imageUrl,
+  //   description:description
+  // }).then(resolve =>{
+  //   console.log("Created with sequilize");
+  //   console.log(resolve);
+  //   res.redirect('/admin/add-product');
+  // })
+  // .catch();
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll().then(products => {
+  req.user.getProducts().then(products => {
     res.render('admin/products', {
       prods: products,
       pageTitle: 'Admin Products',
       path: '/admin/products'
     });
   }).catch(err =>{console.log(err)});
+  // Product.findAll().then(products => {
+  //   res.render('admin/products', {
+  //     prods: products,
+  //     pageTitle: 'Admin Products',
+  //     path: '/admin/products'
+  //   });
+  // }).catch(err =>{console.log(err)});
 };
 
 exports.postDeleteProduct = (req,res,next)=>{
